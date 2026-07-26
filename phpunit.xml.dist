@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    colors="true"
+    processIsolation="false"
+    stopOnFailure="false"
+    bootstrap="tests/bootstrap.php"
+    cacheDirectory=".phpunit.cache"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd">
+  <php>
+    <ini name="memory_limit" value="-1"/>
+    <env name="APP_ENV" value="testing"/>
+  </php>
+  <testsuites>
+    <testsuite name="Queue">
+      <directory suffix="Test.php">tests/TestCase</directory>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory suffix=".php">src/</directory>
+    </include>
+  </source>
+</phpunit>

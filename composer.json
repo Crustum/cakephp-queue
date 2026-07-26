@@ -1,0 +1,75 @@
+{
+    "name": "crustum/cakephp-queue",
+    "description": "CakePHP queue helpers: Dispatchable / Configurable / Taggable job contracts",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "keywords": [
+        "cakephp",
+        "queue",
+        "jobs",
+        "dispatchable"
+    ],
+    "authors": [
+        {
+            "name": "Evgeny Tomenko",
+            "homepage": "https://github.com/skie"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "cakephp/cakephp": "^5.2",
+        "cakephp/queue": "^2.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.1 || ^12.5 || ^13.0",
+        "cakephp/cakephp-codesniffer": "^5.0",
+        "phpstan/phpstan": "^2.0",
+        "rector/rector": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Crustum\\Queue\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Crustum\\Queue\\Test\\": "tests/",
+            "TestApp\\": "tests/TestApp/"
+        }
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@rector-check",
+            "@test",
+            "@analyse"
+        ],
+        "fix": [
+            "@cs-fix",
+            "@rector-fix",
+            "@cs-fix",
+            "@analyse"
+        ],
+        "analyse": [
+            "@stan"
+        ],
+        "cs-check": "phpcs -p --standard=phpcs.xml src/ tests/",
+        "cs-fix": "phpcbf --standard=phpcs.xml src/ tests/",
+        "test": "phpunit",
+        "rector-check": "vendor/bin/rector process --dry-run",
+        "rector-fix": "vendor/bin/rector process",
+        "stan": "phpstan analyse",
+        "stan-baseline": "phpstan analyse --generate-baseline"
+    },
+    "extra": {
+        "installer-name": "Queue"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "cakephp/plugin-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

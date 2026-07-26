@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'main'
+      - '1.x'
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testsuite:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php-version: '8.2'
+            dependencies: lowest
+          - php-version: '8.2'
+            dependencies: highest
+          - php-version: '8.3'
+            dependencies: highest
+          - php-version: '8.4'
+            dependencies: highest
+          - php-version: '8.5'
+            dependencies: highest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, intl
+        coverage: pcov
+        ini-values: zend.assertions = 1, pcov.directory = src
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-${{ hashFiles('composer.lock', 'composer.json') }}
+        restore-keys: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ matrix.dependencies }}-composer-
+
+    - name: composer install
+      run: |
+        if [[ "${{ matrix.dependencies }}" == 'lowest' ]]; then
+          composer update --prefer-lowest --prefer-stable --prefer-dist --no-progress
+        else
+          composer install --prefer-dist --no-progress
+        fi
+
+    - name: Setup problem matchers for PHPUnit
+      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+    - name: Run PHPUnit with coverage
+      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      run: |
+        export CODECOVERAGE=1
+        vendor/bin/phpunit --configuration=phpunit.xml.dist --display-deprecations --display-incomplete --display-skipped --coverage-clover=coverage.xml
+
+    - name: Run PHPUnit without coverage
+      if: matrix.php-version != '8.2' || matrix.dependencies != 'highest'
+      run: vendor/bin/phpunit --configuration=phpunit.xml.dist
+
+    - name: Submit code coverage
+      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      uses: codecov/codecov-action@v3
+
+  cs-stan:
+    name: Coding Standard & Static Analysis
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: mbstring, intl
+        coverage: none
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-php-8.4-quality-composer-${{ hashFiles('composer.lock', 'composer.json') }}
+        restore-keys: ${{ runner.os }}-php-8.4-quality-composer-
+
+    - name: composer install
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run PHP CodeSniffer
+      run: composer cs-check
+
+    - name: Run phpstan
+      run: composer stan

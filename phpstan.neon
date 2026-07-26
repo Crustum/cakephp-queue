@@ -1,0 +1,24 @@
+includes:
+	- phpstan-baseline.neon
+
+parameters:
+	level: 8
+	paths:
+		- src
+	bootstrapFiles:
+		- tests/bootstrap.php
+	tmpDir: build/phpstan
+	ignoreErrors:
+		-
+			identifier: new.static
+			reportUnmatched: false
+		-
+			identifier: trait.unused
+			reportUnmatched: false
+		-
+			identifier: missingType.generics
+			message: '#TSubject#'
+			path: src/Event/*
+			reportUnmatched: false
+
+services:
