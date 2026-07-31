@@ -5,7 +5,10 @@ namespace Crustum\Queue\Job;
 
 use Cake\I18n\DateTime;
 use Cake\Queue\QueueManager;
+use Crustum\Queue\Event\JobDataMutators;
 use Crustum\Queue\Event\JobDispatchEmitters;
+use Crustum\Queue\Sync\SyncDispatchHandledException;
+use Crustum\Queue\Sync\SyncJobRunner;
 
 /**
  * Trait DispatchableTrait
@@ -17,6 +20,9 @@ trait DispatchableTrait
 {
     /**
      * Dispatch the job to the queue with the given data and optional overrides.
+     *
+     * When sync mode handles the dispatch, emits pushed (with sync => true) then
+     * runs SyncJobRunner in-process and skips QueueManager::push.
      *
      * @param array<string, mixed> $data Job payload
      * @param array<string, mixed> $overrides Runtime configuration overrides
@@ -37,9 +43,19 @@ trait DispatchableTrait
             $data['_uniqueId'] = DateTime::now()->getTimestamp() . '-' . uniqid();
         }
 
-        static::emitJobPendingEvent($data, $config);
-        QueueManager::push(static::class, $data, $config);
-        static::emitJobPushedEvent($data, $config);
+        $data = JobDataMutators::prepare(static::class, $data, $config);
+
+        try {
+            static::emitJobPendingEvent($data, $config);
+            QueueManager::push(static::class, $data, $config);
+            static::emitJobPushedEvent($data, $config);
+        } catch (SyncDispatchHandledException $syncDispatchHandledException) {
+            $data = $syncDispatchHandledException->data;
+            $config = $syncDispatchHandledException->config;
+            $config['sync'] = true;
+            static::emitJobPushedEvent($data, $config);
+            SyncJobRunner::run(static::class, $data, $config);
+        }
     }
 
     /**

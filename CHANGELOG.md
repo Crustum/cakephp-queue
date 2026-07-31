@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0]
+
+### Added
+
+- Sync mode: `CrustumQueue.sync` / `CRUSTUM_QUEUE_SYNC`, optional `syncOnly` allow-list, `SyncSuppressibleInterface` (no call-site `$overrides['sync']`; listener attached only when sync is on)
+- `config/crustum_queue.php` — application config
+ - PluginManifest publishes the config (`crustum/plugin-manifest`)
+- `SyncDispatchListener` + `SyncDispatchHandledException` (internal) + `SyncJobRunner` (Cake Queue `Processor`, DI via `ContainerRegistry`)
+- `Event\JobDataMutators` — mutate job data after tags/`_uniqueId` and before pending emit + push (e.g. inject `speculum_uuid`)
+
 ## [0.1.0]
 
 Initial release of `crustum/queue` (`Crustum\Queue`).

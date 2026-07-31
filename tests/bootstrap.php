@@ -91,8 +91,13 @@ Configure::write('Queue', [
     ],
 ]);
 
+Configure::write('CrustumQueue', [
+    'sync' => false,
+    'syncOnly' => [],
+]);
+
 foreach (Configure::read('Queue') as $name => $config) {
-    if (QueueManager::getConfig($name) === null) {
+    if (!in_array($name, QueueManager::configured(), true)) {
         QueueManager::setConfig($name, $config);
     }
 }

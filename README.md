@@ -1,6 +1,6 @@
 # CakePHP Queue Plugin
 
-The **Queue** plugin adds dispatchable job helpers on top of [cakephp/queue](https://book.cakephp.org/queue/2/): self-dispatch (`::dispatch()`), per-job queue configuration, tags, and pending/pushed events with an optional additive host emitter.
+The **Queue** plugin adds dispatchable job helpers on top of [cakephp/queue](https://book.cakephp.org/queue/2/): self-dispatch (`::dispatch()`), per-job queue configuration, tags, optional sync (in-process) dispatch and pending/pushed events with an optional additive application emitter.
 
 ## Requirements
 

@@ -35,15 +35,7 @@ class EventDispatcher
      */
     public function registerListener(EventListenerInterface $listener): void
     {
-        $events = $listener->implementedEvents();
-
-        foreach ($events as $eventKey => $handler) {
-            if (is_string($handler)) {
-                $this->eventManager->on($eventKey, [$listener, $handler]);
-            } else {
-                $this->eventManager->on($eventKey, $handler);
-            }
-        }
+        $this->eventManager->on($listener);
     }
 
     /**
