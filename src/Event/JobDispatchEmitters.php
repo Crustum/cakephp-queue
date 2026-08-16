@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Event;
 
+use Crustum\Queue\Sync\SyncDispatchHandledException;
+
 /**
  * Registry for job-dispatch emission.
  *
@@ -43,15 +45,33 @@ final class JobDispatchEmitters
     /**
      * Emit pending: plugin events first, then optional host emitter.
      *
+     * SyncDispatchHandledException from the plugin event is rethrown after the
+     * host emitter so Monitor/Speculum pending hooks still run.
+     *
      * @param class-string $jobClass Job class
      * @param array<string, mixed> $data Job data
      * @param array<string, mixed> $config Queue configuration
      * @return void
+     * @throws \Crustum\Queue\Sync\SyncDispatchHandledException
      */
     public static function emitPending(string $jobClass, array $data, array $config): void
     {
-        self::default()->emitPending($jobClass, $data, $config);
-        self::$extra?->emitPending($jobClass, $data, $config);
+        $syncException = null;
+        try {
+            self::default()->emitPending($jobClass, $data, $config);
+        } catch (SyncDispatchHandledException $syncDispatchHandledException) {
+            $syncException = $syncDispatchHandledException;
+        }
+
+        try {
+            self::$extra?->emitPending($jobClass, $data, $config);
+        } catch (SyncDispatchHandledException $syncDispatchHandledException) {
+            $syncException ??= $syncDispatchHandledException;
+        }
+
+        if ($syncException instanceof SyncDispatchHandledException) {
+            throw $syncException;
+        }
     }
 
     /**

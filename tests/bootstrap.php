@@ -91,8 +91,13 @@ Configure::write('Queue', [
     ],
 ]);
 
+Configure::write('CrustumQueue', [
+    'sync' => false,
+    'syncOnly' => [],
+]);
+
 foreach (Configure::read('Queue') as $name => $config) {
-    if (QueueManager::getConfig($name) === null) {
+    if (!in_array($name, QueueManager::configured(), true)) {
         QueueManager::setConfig($name, $config);
     }
 }
@@ -104,6 +109,8 @@ if (!Plugin::isLoaded('Cake/Queue')) {
 if (!Plugin::isLoaded('Crustum/Queue')) {
     Plugin::getCollection()->add(new QueuePlugin());
 }
+
+QueuePlugin::registerAttributeCache();
 
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');
