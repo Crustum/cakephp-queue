@@ -9,6 +9,11 @@
     - [ConfigurableInterface](#configurableinterface)
     - [TaggableInterface](#taggableinterface)
     - [SyncSuppressibleInterface](#syncsuppressibleinterface)
+- [Command Bus](#command-bus)
+    - [Commands](#commands)
+    - [Registering Handlers](#registering-handlers)
+    - [Dispatching](#dispatching)
+    - [Attribute Discovery](#attribute-discovery)
 - [Sync Mode](#sync-mode)
 - [Events](#events)
     - [Plugin Events](#plugin-events)
@@ -63,10 +68,16 @@ public function bootstrap(): void
 
 You must also configure [cakephp/queue](https://book.cakephp.org/queue/2/) (`Queue` config + workers) as usual.
 
-Optional sync defaults (env / Configure):
+Publish optional plugin config (requires `crustum/plugin-manifest` in the application):
+
+```bash
+bin/cake manifest install --plugin Crustum/Queue
+```
+
+That copies `config/crustum_queue.php` into the application. Sync defaults:
 
 ```php
-// config/app.php (or app_local.php)
+// config/crustum_queue.php
 'CrustumQueue' => [
     'sync' => filter_var(env('CRUSTUM_QUEUE_SYNC', false), FILTER_VALIDATE_BOOLEAN),
     'syncOnly' => [
@@ -74,6 +85,8 @@ Optional sync defaults (env / Configure):
     ],
 ],
 ```
+
+The plugin bootstrap loads `CONFIG/crustum_queue.php` when present, otherwise the plugin’s own `config/crustum_queue.php`.
 
 <a name="dispatchable-job"></a>
 ### Dispatchable Job
@@ -193,6 +206,104 @@ class HeavyReportJob implements JobInterface, DispatchableInterface, SyncSuppres
     // execute(...)
 }
 ```
+
+<a name="command-bus"></a>
+## Command Bus
+
+The plugin provides a `CommandBus` facade for dispatching typed command objects to handler jobs. Commands are lightweight DTOs that carry the intent and payload; the bus maps a command class to its handler job class and delegates to the handler's static dispatch — sync/async is decided by `CrustumQueue` as usual.
+
+The command DTO is a **leaf**: it implements `CommandMessage` and knows nothing about jobs, the queue, or the bus. Dependencies flow **downward only** — app code → command → bus → job → queue, and nothing points back up. So:
+
+- **App code never imports job classes.** It depends only on the command DTO and the bus, so swapping a handler job for another (or a different queue backend) does not touch callers.
+- **Commands are plain data.** They are safe to construct, serialize, and pass around anywhere; they carry the *intent*, not the execution.
+- **The bus owns the mapping.** The command does not need to know which job runs it, and the job's `#[Handles]` attribute keeps the command class itself dependency-free.
+
+<a name="commands"></a>
+### Commands
+
+Implement `Crustum\Queue\CommandMessage` on a DTO to make it dispatchable:
+
+```php
+use Crustum\Queue\CommandMessage;
+
+class SendWelcomeEmailCommand implements CommandMessage
+{
+    public function __construct(
+        public readonly int $userId,
+        public readonly string $locale = 'en',
+    ) {
+    }
+
+    public function payload(): array
+    {
+        return ['user_id' => $this->userId, 'locale' => $this->locale];
+    }
+
+    public static function fromPayload(array $data): static
+    {
+        return new self(
+            userId: (int)($data['user_id'] ?? 0),
+            locale: (string)($data['locale'] ?? 'en'),
+        );
+    }
+}
+```
+
+`payload()` produces the JSON-safe body for the queue; `fromPayload()` rebuilds the command in the handler's `execute()`.
+
+<a name="registering-handlers"></a>
+### Registering Handlers
+
+Register a command→job pair either manually or via attributes:
+
+```php
+use Crustum\Queue\CommandBus;
+
+CommandBus::map(SendWelcomeEmailCommand::class, SendWelcomeEmailJob::class);
+```
+
+<a name="dispatching"></a>
+### Dispatching
+
+```php
+CommandBus::dispatch(new SendWelcomeEmailCommand(userId: 42));
+CommandBus::dispatchLater(new SendWelcomeEmailCommand(userId: 43, locale: 'fr'), 30);
+```
+
+`dispatch()` delegates to the handler job's `::dispatch()`, so sync mode runs the job in-process and async mode pushes to the broker — identical to direct `SendWelcomeEmailJob::dispatch()`.
+
+Both accept queue `$overrides` (e.g. `['sync' => true]`) that are forwarded to the handler's static dispatch. Dispatching a command with no registered handler throws a `RuntimeException` (never a bare undefined-key notice).
+
+<a name="attribute-discovery"></a>
+### Attribute Discovery
+
+Instead of a manual map, mark the handler job with `#[Handles]` and discover all handlers from your Job folders:
+
+```php
+use Crustum\Queue\CommandMessage;
+use Crustum\Queue\Handles;
+
+#[Handles(SendWelcomeEmailCommand::class)]
+class SendWelcomeEmailJob implements JobInterface, DispatchableInterface
+{
+    use DispatchableTrait;
+
+    public function execute(Message $message): ?string
+    {
+        $command = SendWelcomeEmailCommand::fromPayload($message->getArgument());
+        // $command->userId, $command->locale …
+        return Processor::ACK;
+    }
+}
+```
+
+Then build the map in bootstrap:
+
+```php
+CommandBus::registerFromAttributes();
+```
+
+Discovery scans the app's Job folder (and each loaded plugin's Job folder) via the attribute resolver (`crustum/cakephp-attribute-resolver`); vendor is excluded. `registerFromAttributes()` is idempotent — calling it twice rebuilds the same map. Manual `map()` calls remain available as a fallback or for cases outside the scanned scope. The scan is customizable via `$paths`, `$basePath`, and `$excludePaths` (defaults: `['Job/*.php']`, `ROOT/src`, `['vendor', 'tests', 'build', 'tmp']`).
 
 <a name="sync-mode"></a>
 ## Sync Mode

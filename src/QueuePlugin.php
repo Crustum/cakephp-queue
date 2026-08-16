@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Crustum\Queue;
 
+use Cake\Cache\Cache;
+use Cake\Cache\Engine\FileEngine;
 use Cake\Core\BasePlugin;
 use Cake\Core\Configure;
 use Cake\Core\ContainerApplicationInterface;
@@ -69,7 +71,32 @@ class QueuePlugin extends BasePlugin implements ManifestInterface
             ContainerRegistry::setInstance($app->getContainer());
         }
 
+        self::registerAttributeCache();
         self::registerSyncListener();
+    }
+
+    /**
+     * Ensure the attribute-resolver cache config exists (self-registering plugin).
+     *
+     * CommandBus scans #[Handles] job attributes; the scan result is cached via
+     * Cake Cache. The plugin registers its own `_queue_attributes_` config if the
+     * host has not already provided one, so no manual app setup is required.
+     *
+     * @return void
+     */
+    public static function registerAttributeCache(): void
+    {
+        if (in_array(CommandBus::ATTRIBUTES_CACHE, Cache::configured(), true)) {
+            return;
+        }
+
+        Cache::setConfig(CommandBus::ATTRIBUTES_CACHE, [
+            'className' => FileEngine::class,
+            'prefix' => 'queue_attributes_',
+            'path' => CACHE . 'persistent' . DS,
+            'serialize' => true,
+            'duration' => '+1 hour',
+        ]);
     }
 
     /**

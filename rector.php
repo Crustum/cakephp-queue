@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\CodeQuality\Rector\Isset_\IssetOnPropertyObjectToPropertyExistsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\For_\RemoveDeadIfForeachForRector;
@@ -32,7 +31,6 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         ReadOnlyPropertyRector::class,
-        EncapsedStringsToSprintfRector::class,
         DisallowedEmptyRuleFixerRector::class,
         ClassPropertyAssignToConstructorPromotionRector::class,
         AddClosureParamTypeForArrayMapRector::class,
