@@ -20,10 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php-version: '8.2'
+          - php-version: '8.3'
             dependencies: lowest
-          - php-version: '8.2'
-            dependencies: highest
           - php-version: '8.3'
             dependencies: highest
           - php-version: '8.4'
@@ -58,21 +56,21 @@ jobs:
         fi
 
     - name: Setup problem matchers for PHPUnit
-      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
       run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
     - name: Run PHPUnit with coverage
-      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
       run: |
         export CODECOVERAGE=1
         vendor/bin/phpunit --configuration=phpunit.xml.dist --display-deprecations --display-incomplete --display-skipped --coverage-clover=coverage.xml
 
     - name: Run PHPUnit without coverage
-      if: matrix.php-version != '8.2' || matrix.dependencies != 'highest'
+      if: matrix.php-version != '8.3' || matrix.dependencies != 'highest'
       run: vendor/bin/phpunit --configuration=phpunit.xml.dist
 
     - name: Submit code coverage
-      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
       uses: codecov/codecov-action@v3
 
   cs-stan:

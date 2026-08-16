@@ -110,5 +110,7 @@ if (!Plugin::isLoaded('Crustum/Queue')) {
     Plugin::getCollection()->add(new QueuePlugin());
 }
 
+QueuePlugin::registerAttributeCache();
+
 date_default_timezone_set('UTC');
 mb_internal_encoding('UTF-8');

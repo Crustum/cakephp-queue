@@ -4,7 +4,7 @@ The **Queue** plugin adds dispatchable job helpers on top of [cakephp/queue](htt
 
 ## Requirements
 
-* PHP 8.2+
+* PHP 8.3+
 
 See [Versions.md](docs/Versions.md) for the supported CakePHP versions.
 
