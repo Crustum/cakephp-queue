@@ -17,7 +17,7 @@ namespace Crustum\Queue\Event;
  * });
  * ```
  */
-final class JobDataMutators
+class JobDataMutators
 {
     /**
      * @var list<callable(class-string, array<string, mixed>, array<string, mixed>): array<string, mixed>>

@@ -9,13 +9,13 @@ use Crustum\Queue\Job\SyncSuppressibleInterface;
 /**
  * Resolves whether a dispatch should run in-process (sync) or enqueue.
  *
- * Order: job suppress → global Configure → optional syncOnly allow-list
- * → sync when eligible.
+ * Order: job suppress, then global Configure, then the optional syncOnly
+ * allow-list, then sync when eligible.
  *
  * Delayed jobs (dispatchLater / delay) always stay async.
  * SyncDispatchListener is only registered when global sync is on.
  */
-final class SyncModeResolver
+class SyncModeResolver
 {
     /**
      * @param class-string $jobClass Job class

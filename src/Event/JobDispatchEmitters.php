@@ -17,7 +17,7 @@ use Crustum\Queue\Sync\SyncDispatchHandledException;
  * JobDispatchEmitters::set(new AppJobDispatchEmitter());
  * ```
  */
-final class JobDispatchEmitters
+class JobDispatchEmitters
 {
     /**
      * @var \Crustum\Queue\Event\JobDispatchEmitterInterface|null

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0]
+
+### Added
+
+- Job middleware pipeline: `Contract\MiddlewareInterface` / `MiddlewareAwareInterface`, shared `MiddlewareRunner` core, `Processor\MiddlewareProcessor` (via the `processor` queue config key) + `RunsMiddlewareTrait`, `Job\MiddlewareJob` base class
+- Built-in middleware: `Middleware\Skip`, `Release` (+ `ReleasesJobsTrait`), `FailOnException`, `ThrottlesExceptions`, `WithoutOverlapping` (Cake Lock), `RateLimited`
+- `Limiter\RateLimiter` with named limiters (`setLimiter` / `getLimiter` / `hasLimiter`), `Limiter\Limit` / `GlobalLimit` / `Unlimited` definitions, `ConcurrencyLimiter` (+ builder), I18n-backed `Limiter\Time`
+- `Processor\CallbackProcessor`: return-is-data lifecycle, `then` / `catch` payload callbacks, duck-typed `failed()` hook; pluggable `Contract\CallbackSerializerInterface` (`HasCallbackSerializer`, `Processor\QueuedCallback`, default `SerializableClosureSerializer`)
+- `laravel/serializable-closure` as composer `suggest` (callback packing only)
+
 ## [1.2.0]
 
 ### Added

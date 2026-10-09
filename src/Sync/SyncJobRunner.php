@@ -23,7 +23,7 @@ use Throwable;
 /**
  * Runs a job in-process via Cake Queue Processor (DI + Processor.message.* parity).
  */
-final class SyncJobRunner
+class SyncJobRunner
 {
     /**
      * @param class-string $jobClass Job class

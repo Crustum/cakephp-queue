@@ -15,7 +15,7 @@ use RuntimeException;
  * Mapping is discovered from {@see Handles} attributes via the AttributeResolver
  * (Crustum\Codex jobs only), so no manual registration is needed.
  */
-final class CommandBus
+class CommandBus
 {
     /**
      * Attribute resolver config name for job handler discovery.
@@ -45,7 +45,7 @@ final class CommandBus
     }
 
     /**
-     * Discover command→job handlers from {@see Handles} attributes in Job folders.
+     * Discover command-to-job handlers from {@see Handles} attributes in Job folders.
      *
      * Scans the app's src/Job (and, via getLoadedPlugins, every loaded plugin's
      * Job folder). basePath is scoped to src and vendor/tests are excluded so the

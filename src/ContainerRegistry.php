@@ -10,7 +10,7 @@ use Cake\Core\ContainerInterface;
  *
  * Set from QueuePlugin::bootstrap when the host implements ContainerApplicationInterface.
  */
-final class ContainerRegistry
+class ContainerRegistry
 {
     /**
      * @var \Cake\Core\ContainerInterface|null

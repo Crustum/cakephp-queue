@@ -11,7 +11,7 @@ use RuntimeException;
  * Caught and absorbed entirely inside DispatchableTrait::dispatch().
  * Application code must never catch or depend on this type.
  */
-final class SyncDispatchHandledException extends RuntimeException
+class SyncDispatchHandledException extends RuntimeException
 {
     /**
      * @param class-string $jobClass Job class

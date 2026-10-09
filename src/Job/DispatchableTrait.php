@@ -34,14 +34,13 @@ trait DispatchableTrait
         $tags = is_array($data['tags'] ?? null) ? $data['tags'] : [];
 
         if (is_a(static::class, TaggableInterface::class, true)) {
-            $tags = static::mergeTags($tags, static::createTags($data));
+            $taggableClass = static::class;
+            $tags = static::mergeTags($tags, $taggableClass::createTags($data));
         }
 
         $data['tags'] = static::mergeTags($tags, [static::class]);
 
-        if (!isset($data['_uniqueId'])) {
-            $data['_uniqueId'] = DateTime::now()->getTimestamp() . '-' . uniqid();
-        }
+        $data['_uniqueId'] ??= DateTime::now()->getTimestamp() . '-' . uniqid();
 
         $data = JobDataMutators::prepare(static::class, $data, $config);
 
