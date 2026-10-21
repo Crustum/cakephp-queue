@@ -42,8 +42,9 @@ interface JobDispatchEmitterInterface
      * Build a payload for host emission (host may use its own shape).
      *
      * @param class-string $jobClass Job class
-     * @param array<string, mixed> $data Job data
+     * @param array<string, mixed> $data Job data (pure payload)
+     * @param array<string, mixed> $config Queue configuration (carries metadata/dtoClass)
      * @return array<string, mixed>
      */
-    public function buildPayload(string $jobClass, array $data): array;
+    public function buildPayload(string $jobClass, array $data, array $config = []): array;
 }

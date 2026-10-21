@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0]
+
+### Added
+
+- DTO / object dispatch: `DispatchableInterface::dispatch(array|object)` serializes via `Cake\Queue\Dto\DtoManager`, records `dtoClass`; jobs restore with `Message::getDto(Expected::class)`
+- Envelope in metadata: tags and `_uniqueId` travel in message `metadata`, never inside job data; generated before produce
+- `CommandBus` passes command objects through to the handler job (no array cutting)
+- `SyncJobRunner` carries `dtoClass` + `metadata`; event payload is `{id, job, body{class,args}, metadata, dtoClass?}`
+- `TaggableInterface::createTags(array|object)`
+
+### Changed
+
+- Requires `cakephp/queue: 3.x-dev` (DTO + metadata body schema)
+
 ## [1.3.0]
 
 ### Added

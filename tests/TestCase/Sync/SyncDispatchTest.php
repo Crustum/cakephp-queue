@@ -273,7 +273,7 @@ class SyncDispatchTest extends TestCase
                 $this->order[] = empty($config['sync']) ? 'application-pushed-async' : 'application-pushed-sync';
             }
 
-            public function buildPayload(string $jobClass, array $data): array
+            public function buildPayload(string $jobClass, array $data, array $config = []): array
             {
                 return [];
             }

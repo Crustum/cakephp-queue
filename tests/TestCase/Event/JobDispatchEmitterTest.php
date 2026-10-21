@@ -62,13 +62,13 @@ class JobDispatchEmitterTest extends TestCase
                 $this->order[] = 'extra-pushed';
             }
 
-            public function buildPayload(string $jobClass, array $data): array
+            public function buildPayload(string $jobClass, array $data, array $config = []): array
             {
                 return [
                     'id' => 'custom',
                     'job' => $jobClass,
                     'body' => ['class' => [$jobClass, 'execute'], 'args' => [$data]],
-                    'tags' => [],
+                    'metadata' => [],
                 ];
             }
         };
@@ -102,9 +102,9 @@ class JobDispatchEmitterTest extends TestCase
             {
             }
 
-            public function buildPayload(string $jobClass, array $data): array
+            public function buildPayload(string $jobClass, array $data, array $config = []): array
             {
-                return ['id' => 'x', 'job' => $jobClass, 'body' => [], 'tags' => []];
+                return ['id' => 'x', 'job' => $jobClass, 'body' => [], 'metadata' => []];
             }
         };
 
@@ -113,9 +113,8 @@ class JobDispatchEmitterTest extends TestCase
         JobDispatchEmitters::clear();
         $this->assertNull(JobDispatchEmitters::extra());
 
-        $payload = JobDispatchEmitters::get()->buildPayload(ExampleDispatchableJob::class, [
-            '_uniqueId' => 'uid-1',
-            'tags' => [],
+        $payload = JobDispatchEmitters::get()->buildPayload(ExampleDispatchableJob::class, [], [
+            'metadata' => ['_uniqueId' => 'uid-1', 'tags' => []],
         ]);
         $this->assertSame('uid-1', $payload['id']);
         $this->assertSame(ExampleDispatchableJob::class, $payload['job']);

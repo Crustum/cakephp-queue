@@ -54,6 +54,13 @@ class SyncJobRunner
                 'queue' => $queue,
             ],
         ];
+        if (is_string($config['dtoClass'] ?? null) && $config['dtoClass'] !== '') {
+            $body['dtoClass'] = $config['dtoClass'];
+        }
+
+        if (is_array($config['metadata'] ?? null) && $config['metadata'] !== []) {
+            $body['metadata'] = $config['metadata'];
+        }
 
         $message = new NullMessage(json_encode($body, JSON_THROW_ON_ERROR));
         $message->setProperty('sync', true);

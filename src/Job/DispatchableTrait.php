@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Crustum\Queue\Job;
 
 use Cake\I18n\DateTime;
+use Cake\Queue\Dto\DtoManager;
 use Cake\Queue\QueueManager;
 use Crustum\Queue\Event\JobDataMutators;
 use Crustum\Queue\Event\JobDispatchEmitters;
@@ -24,23 +25,51 @@ trait DispatchableTrait
      * When sync mode handles the dispatch, emits pushed (with sync => true) then
      * runs SyncJobRunner in-process and skips QueueManager::push.
      *
-     * @param array<string, mixed> $data Job payload
+     * DTO/command objects are serialized at entry (never mutated); the envelope
+     * (tags, _uniqueId) travels in $config['metadata'], never inside $data.
+     *
+     * @param object|array<string, mixed> $data Job payload (array or DTO/command object)
      * @param array<string, mixed> $overrides Runtime configuration overrides
      * @return void
      */
-    public static function dispatch(array $data = [], array $overrides = []): void
+    public static function dispatch(array|object $data = [], array $overrides = []): void
     {
         $config = array_merge(static::resolveQueueConfig(), $overrides);
+
+        $dtoClass = is_object($data) ? $data::class : null;
+        if (is_object($data)) {
+            $data = DtoManager::serialize($data);
+        } elseif (!empty($config['dtoClass'])) {
+            $dtoClass = is_string($config['dtoClass']) ? $config['dtoClass'] : null;
+            unset($config['dtoClass']);
+            if ($dtoClass !== null) {
+                $config['dtoClass'] = $dtoClass;
+            }
+        }
+
+        /** @var array<string, mixed> $data */
+
         $tags = is_array($data['tags'] ?? null) ? $data['tags'] : [];
+        unset($data['tags']);
+        unset($data['_uniqueId']);
 
         if (is_a(static::class, TaggableInterface::class, true)) {
             $taggableClass = static::class;
             $tags = static::mergeTags($tags, $taggableClass::createTags($data));
         }
 
-        $data['tags'] = static::mergeTags($tags, [static::class]);
+        $metadata = is_array($config['metadata'] ?? null) ? $config['metadata'] : [];
+        $metadataTags = is_array($metadata['tags'] ?? null) ? $metadata['tags'] : [];
+        $metadata['tags'] = static::mergeTags(
+            static::mergeTags($metadataTags, $tags),
+            [static::class],
+        );
+        $metadata['_uniqueId'] ??= DateTime::now()->getTimestamp() . '-' . uniqid();
+        $config['metadata'] = $metadata;
 
-        $data['_uniqueId'] ??= DateTime::now()->getTimestamp() . '-' . uniqid();
+        if ($dtoClass !== null) {
+            $config['dtoClass'] = $dtoClass;
+        }
 
         $data = JobDataMutators::prepare(static::class, $data, $config);
 
@@ -60,12 +89,12 @@ trait DispatchableTrait
     /**
      * Dispatch the job to the queue with a delay.
      *
-     * @param array<string, mixed> $data Job payload
+     * @param object|array<string, mixed> $data Job payload (array or DTO/command object)
      * @param int $delaySeconds Delay in seconds
      * @param array<string, mixed> $overrides Runtime configuration overrides
      * @return void
      */
-    public static function dispatchLater(array $data, int $delaySeconds, array $overrides = []): void
+    public static function dispatchLater(array|object $data, int $delaySeconds, array $overrides = []): void
     {
         $overrides['delay'] = $delaySeconds;
         static::dispatch($data, $overrides);

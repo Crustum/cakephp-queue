@@ -6,6 +6,8 @@
     - [Dispatchable Job](#dispatchable-job)
 - [Dispatchable Jobs](#dispatchable-jobs)
     - [DispatchableInterface and Trait](#dispatchableinterface-and-trait)
+    - [DTO / Object Dispatch](#dto-object-dispatch)
+    - [Envelope (Metadata)](#envelope-metadata)
     - [ConfigurableInterface](#configurableinterface)
     - [TaggableInterface](#taggableinterface)
     - [SyncSuppressibleInterface](#syncsuppressibleinterface)
@@ -34,9 +36,9 @@
 <a name="introduction"></a>
 ## Introduction
 
-CakePHP Queue (`crustum/cakephp-queue`, namespace `Crustum\Queue`) wraps [cakephp/queue](https://book.cakephp.org/queue/2/) with helpers for self-dispatching jobs, static queue configuration, tags, optional **sync (in-process) dispatch**, and dispatch lifecycle events.
+CakePHP Queue (`crustum/cakephp-queue`, namespace `Crustum\Queue`) wraps [cakephp/queue](https://book.cakephp.org/queue/) with helpers for self-dispatching jobs, static queue configuration, tags, optional **sync (in-process) dispatch**, and dispatch lifecycle events.
 
-Jobs can call `::dispatch()` or `::dispatchLater()` through `DispatchableTrait`, optionally define their own queue settings with `getQueueConfig()`, and attach tags via `createTags()`. Before enqueue, `JobDataMutators::prepare()` can inject application fields into job data (for example Speculum’s `speculum_uuid`). Every dispatch then fires `Crustum/Queue.Job.pending` then `Crustum/Queue.Job.pushed`. When sync mode handles a job, push is skipped and the job runs in-process via Cake Queue `Processor` (same DI and `Processor.message.*` events as a worker). Applications may register an extra emitter with `JobDispatchEmitters::set()` for their own side effects without replacing those events.
+Jobs can call `::dispatch()` or `::dispatchLater()` through `DispatchableTrait` with an array payload or a DTO/command object, optionally define their own queue settings with `getQueueConfig()`, and attach tags via `createTags()`. The envelope (tags, `_uniqueId`) travels in message metadata, never inside job data. Before enqueue, `JobDataMutators::prepare()` can inject application fields into job data (for example Speculum's `speculum_uuid`). Every dispatch then fires `Crustum/Queue.Job.pending` then `Crustum/Queue.Job.pushed`. When sync mode handles a job, push is skipped and the job runs in-process via Cake Queue `Processor` (same DI and `Processor.message.*` events as a worker). Applications may register an extra emitter with `JobDispatchEmitters::set()` for their own side effects without replacing those events.
 <a name="quickstart"></a>
 ## Quickstart
 
@@ -77,7 +79,7 @@ public function bootstrap(): void
 }
 ```
 
-You must also configure [cakephp/queue](https://book.cakephp.org/queue/2/) (`Queue` config + workers) as usual.
+You must also configure [cakephp/queue](https://book.cakephp.org/queue/) (`Queue` config + workers) as usual.
 
 Publish optional plugin config (requires `crustum/plugin-manifest` in the application):
 
@@ -133,14 +135,48 @@ Implement `Crustum\Queue\Job\DispatchableInterface` and use `DispatchableTrait` 
 
 `dispatch()`:
 
-1. Resolves queue options (defaults or `getQueueConfig()`)
-2. Merges tags (payload + `TaggableInterface` + job class)
-3. Ensures `_uniqueId` on the payload
+1. Serializes DTO/command objects at entry (data stays pure)
+2. Merges tags (`TaggableInterface` + job class) into metadata
+3. Ensures `_uniqueId` in metadata (generated before produce)
 4. Runs data mutators
 5. Emits pending → `QueueManager::push` → emits pushed
    **or** (sync): pending → pushed (`sync => true`) → `SyncJobRunner` (skip push)
 
 `dispatchLater()` always stays async (delay is never executed in-process).
+
+<a name="dto-object-dispatch"></a>
+### DTO / Object Dispatch
+
+Pass an array or a DTO/command object — objects are serialized at entry and never mutated:
+
+```php
+// Direct job dispatch (plain DTO):
+ExampleJob::dispatch(new ExampleDto(id: 7));
+
+// via the bus (command → handler job):
+CommandBus::dispatch(new ExampleCommand(id: 7));
+
+// array payload + explicit DTO class also works:
+ExampleJob::dispatch(['id' => 7], ['dtoClass' => ExampleDto::class]);
+```
+
+The handler restores the typed object from the pure payload:
+
+```php
+public function execute(Message $message): ?string
+{
+    $dto = $message->getDto(ExampleDto::class);
+
+    return Processor::ACK;
+}
+```
+
+The expected class always comes from job code, never from the message body.
+
+<a name="envelope-metadata"></a>
+### Envelope (Metadata)
+
+Tags and `_uniqueId` live in message `metadata`, never inside job data. `_uniqueId` is generated before produce and is the stable instance id used by monitoring to link dispatch ↔ worker regardless of event order.
 
 <a name="configurableinterface"></a>
 ### ConfigurableInterface
@@ -184,9 +220,9 @@ class TaggedJob implements JobInterface, DispatchableInterface, TaggableInterfac
 {
     use DispatchableTrait;
 
-    public static function createTags(array $data): array
+    public static function createTags(array|object $data): array
     {
-        $package = $data['package'] ?? null;
+        $package = is_array($data) ? ($data['package'] ?? null) : null;
 
         return is_string($package) ? ['package:' . $package] : [];
     }
@@ -195,7 +231,7 @@ class TaggedJob implements JobInterface, DispatchableInterface, TaggableInterfac
 }
 ```
 
-Tags from the payload, `createTags()`, and the job class name are merged uniquely into `$data['tags']`.
+Tags from `createTags()` and the job class name are merged uniquely into message metadata.
 
 <a name="syncsuppressibleinterface"></a>
 ### SyncSuppressibleInterface
@@ -244,23 +280,10 @@ class SendWelcomeEmailCommand implements CommandMessage
         public readonly string $locale = 'en',
     ) {
     }
-
-    public function payload(): array
-    {
-        return ['user_id' => $this->userId, 'locale' => $this->locale];
-    }
-
-    public static function fromPayload(array $data): static
-    {
-        return new self(
-            userId: (int)($data['user_id'] ?? 0),
-            locale: (string)($data['locale'] ?? 'en'),
-        );
-    }
 }
 ```
 
-`payload()` produces the JSON-safe body for the queue; `fromPayload()` rebuilds the command in the handler's `execute()`.
+Commands are plain DTOs hydrated by `DtoManager`. The handler restores them with `$message->getDto(SendWelcomeEmailCommand::class)`.
 
 <a name="registering-handlers"></a>
 ### Registering Handlers
@@ -281,7 +304,7 @@ CommandBus::dispatch(new SendWelcomeEmailCommand(userId: 42));
 CommandBus::dispatchLater(new SendWelcomeEmailCommand(userId: 43, locale: 'fr'), 30);
 ```
 
-`dispatch()` delegates to the handler job's `::dispatch()`, so sync mode runs the job in-process and async mode pushes to the broker — identical to direct `SendWelcomeEmailJob::dispatch()`.
+`dispatch()` delegates to the handler job's `::dispatch()`, so sync mode runs the job in-process and async mode pushes to the broker — identical to direct `SendWelcomeEmailJob::dispatch()`. The command object is passed through as-is and serialized once at the handler dispatch; it is never cut to an array.
 
 Both accept queue `$overrides` (e.g. `['sync' => true]`) that are forwarded to the handler's static dispatch. Dispatching a command with no registered handler throws a `RuntimeException` (never a bare undefined-key notice).
 
@@ -301,7 +324,7 @@ class SendWelcomeEmailJob implements JobInterface, DispatchableInterface
 
     public function execute(Message $message): ?string
     {
-        $command = SendWelcomeEmailCommand::fromPayload($message->getArgument());
+        $command = $message->getDto(SendWelcomeEmailCommand::class);
         // $command->userId, $command->locale …
         return Processor::ACK;
     }
@@ -561,7 +584,7 @@ Default emission uses `DefaultJobDispatchEmitter` / `EventDispatcher`.
 <a name="data-mutators"></a>
 ### Data Mutators
 
-Register callbacks that run after tags/`_uniqueId` and **before** pending events + push/sync:
+Register callbacks that run after the envelope and **before** pending events + push/sync:
 
 ```php
 use Crustum\Queue\Event\JobDataMutators;
@@ -595,6 +618,6 @@ Implement `JobDispatchEmitterInterface`:
 
 - `emitPending(string $jobClass, array $data, array $config): void`
 - `emitPushed(string $jobClass, array $data, array $config): void`
-- `buildPayload(string $jobClass, array $data): array`
+- `buildPayload(string $jobClass, array $data, array $config = []): array`
 
 Application emitters must not swallow sync control-flow exceptions if they wrap pending emission; `JobDispatchEmitters` rethrows `SyncDispatchHandledException` after the application pending hook.

@@ -101,6 +101,9 @@ class CommandBus
     /**
      * Dispatch a command to its handler job.
      *
+     * The command object is passed through to the handler job (which accepts
+     * array|object) — never cut to an array here.
+     *
      * @param \Crustum\Queue\CommandMessage $command Command payload
      * @param array<string, mixed> $overrides Queue config overrides
      * @return void
@@ -109,7 +112,7 @@ class CommandBus
     public static function dispatch(CommandMessage $command, array $overrides = []): void
     {
         $handlerClass = self::handlerFor($command::class);
-        $handlerClass::dispatch($command->payload(), $overrides);
+        $handlerClass::dispatch($command, $overrides);
     }
 
     /**
@@ -124,7 +127,7 @@ class CommandBus
     public static function dispatchLater(CommandMessage $command, int $delay, array $overrides = []): void
     {
         $handlerClass = self::handlerFor($command::class);
-        $handlerClass::dispatchLater($command->payload(), $delay, $overrides);
+        $handlerClass::dispatchLater($command, $delay, $overrides);
     }
 
     /**

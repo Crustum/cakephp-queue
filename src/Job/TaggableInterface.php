@@ -13,8 +13,8 @@ interface TaggableInterface
     /**
      * Create custom tags for the job based on its data.
      *
-     * @param array<string, mixed> $data Job data
+     * @param object|array<string, mixed> $data Job data (array payload or DTO/command object)
      * @return array<string> Array of custom tags
      */
-    public static function createTags(array $data): array;
+    public static function createTags(array|object $data): array;
 }

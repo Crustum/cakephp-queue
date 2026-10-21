@@ -7,7 +7,10 @@ namespace Crustum\Queue;
  * Typed job payload contract (prototype for crustum/cakephp-queue CommandBus).
  *
  * A command message is a leaf DTO: callers construct it, {@see CommandBus} maps
- * its class to a handler job, the job restores it in execute() via fromPayload().
+ * its class to a handler job, the job restores it in execute() via
+ * `Message::getDto()`.
+ *
+ * New commands are plain DTOs hydrated by `DtoManager`; no base trait needed.
  */
 interface CommandMessage
 {

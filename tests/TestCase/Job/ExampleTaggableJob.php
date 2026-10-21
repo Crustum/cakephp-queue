@@ -18,12 +18,12 @@ class ExampleTaggableJob implements JobInterface, DispatchableInterface, Taggabl
     use DispatchableTrait;
 
     /**
-     * @param array<string, mixed> $data Job data
+     * @param array<string, mixed>|object $data Job data
      * @return array<string>
      */
-    public static function createTags(array $data): array
+    public static function createTags(array|object $data): array
     {
-        $package = $data['package'] ?? null;
+        $package = is_array($data) ? ($data['package'] ?? null) : null;
 
         return is_string($package) ? ['package:' . $package] : [];
     }

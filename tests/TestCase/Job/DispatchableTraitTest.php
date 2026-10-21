@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Test\TestCase\Job;
 
+use Cake\Event\EventManager;
 use Cake\Queue\TestSuite\QueueTrait;
 use Cake\TestSuite\TestCase;
 
@@ -26,19 +27,34 @@ class DispatchableTraitTest extends TestCase
     }
 
     /**
+     * Envelope lives in the pushed event payload metadata, never in data.
+     *
      * @return void
      */
     public function testDispatchAddsClassTagAndUniqueId(): void
     {
+        $seen = [];
+        EventManager::instance()->on(
+            'Crustum/Queue.Job.pushed',
+            function ($event) use (&$seen): void {
+                $seen = (array)$event->getData('payload');
+            },
+        );
+
         ExampleDispatchableJob::dispatch(['id' => 7]);
+
+        EventManager::instance()->off('Crustum/Queue.Job.pushed');
 
         $jobs = $this->getQueuedJobsByClass(ExampleDispatchableJob::class);
         $this->assertNotEmpty($jobs);
         $data = $jobs[0]['data'];
 
-        $this->assertContains(ExampleDispatchableJob::class, $data['tags']);
-        $this->assertArrayHasKey('_uniqueId', $data);
-        $this->assertNotSame('', $data['_uniqueId']);
+        $this->assertArrayNotHasKey('tags', $data);
+        $this->assertArrayNotHasKey('_uniqueId', $data);
+        $this->assertSame(7, $data['id']);
+
+        $this->assertContains(ExampleDispatchableJob::class, $seen['metadata']['tags'] ?? []);
+        $this->assertNotSame('', $seen['metadata']['_uniqueId'] ?? '');
     }
 
     /**
@@ -56,10 +72,20 @@ class DispatchableTraitTest extends TestCase
      */
     public function testTaggableJobMergesCustomTags(): void
     {
+        $seen = [];
+        EventManager::instance()->on(
+            'Crustum/Queue.Job.pushed',
+            function ($event) use (&$seen): void {
+                $seen = (array)$event->getData('payload');
+            },
+        );
+
         ExampleTaggableJob::dispatch(['package' => 'cakephp/cakephp']);
 
-        $jobs = $this->getQueuedJobsByClass(ExampleTaggableJob::class);
-        $tags = $jobs[0]['data']['tags'];
+        EventManager::instance()->off('Crustum/Queue.Job.pushed');
+
+        $this->assertJobQueued(ExampleTaggableJob::class);
+        $tags = $seen['metadata']['tags'] ?? [];
 
         $this->assertContains('package:cakephp/cakephp', $tags);
         $this->assertContains(ExampleTaggableJob::class, $tags);

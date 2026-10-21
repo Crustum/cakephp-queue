@@ -21,7 +21,7 @@ class DefaultJobDispatchEmitter implements JobDispatchEmitterInterface
      */
     public function emitPending(string $jobClass, array $data, array $config): void
     {
-        $payload = $this->buildPayload($jobClass, $data);
+        $payload = $this->buildPayload($jobClass, $data, $config);
         $this->dispatcher()->dispatchJobPending(
             $config['config'] ?? 'default',
             $config['queue'] ?? $config['config'] ?? 'default',
@@ -35,7 +35,7 @@ class DefaultJobDispatchEmitter implements JobDispatchEmitterInterface
      */
     public function emitPushed(string $jobClass, array $data, array $config): void
     {
-        $payload = $this->buildPayload($jobClass, $data);
+        $payload = $this->buildPayload($jobClass, $data, $config);
         $this->dispatcher()->dispatchJobPushed(
             $config['config'] ?? 'default',
             $config['queue'] ?? $config['config'] ?? 'default',
@@ -47,21 +47,29 @@ class DefaultJobDispatchEmitter implements JobDispatchEmitterInterface
     /**
      * @inheritDoc
      */
-    public function buildPayload(string $jobClass, array $data): array
+    public function buildPayload(string $jobClass, array $data, array $config = []): array
     {
-        $id = is_string($data['_uniqueId'] ?? null)
-            ? $data['_uniqueId']
+        $metadata = is_array($config['metadata'] ?? null) ? $config['metadata'] : [];
+        $id = is_string($metadata['_uniqueId'] ?? null)
+            ? $metadata['_uniqueId']
             : hash('sha256', $jobClass . '|' . json_encode($data));
 
-        return [
+        $dtoClass = $config['dtoClass'] ?? null;
+
+        $payload = [
             'id' => $id,
             'job' => $jobClass,
             'body' => [
                 'class' => [$jobClass, 'execute'],
                 'args' => [$data],
             ],
-            'tags' => $data['tags'] ?? [],
+            'metadata' => $metadata,
         ];
+        if (is_string($dtoClass) && $dtoClass !== '') {
+            $payload['dtoClass'] = $dtoClass;
+        }
+
+        return $payload;
     }
 
     /**
