@@ -48,7 +48,7 @@ class QueuePlugin extends BasePlugin implements ManifestInterface
     /**
      * @var bool
      */
-    protected bool $routesEnabled = false;
+    protected bool $routesEnabled = true;
 
     /**
      * @param \Cake\Core\PluginApplicationInterface $app Application
@@ -73,6 +73,11 @@ class QueuePlugin extends BasePlugin implements ManifestInterface
 
         self::registerAttributeCache();
         self::registerSyncListener();
+        self::registerWorkerRecorder();
+
+        $descriptions = (array)Configure::read('DebugBar.inspectorDescriptions');
+        $descriptions['Queue'] ??= 'Pushed jobs and worker executions with status.';
+        Configure::write('DebugBar.inspectorDescriptions', $descriptions);
     }
 
     /**
@@ -126,6 +131,32 @@ class QueuePlugin extends BasePlugin implements ManifestInterface
         }
 
         $manager->on(new SyncDispatchListener());
+    }
+
+    /**
+     * Attach the toolbar worker recorder (self-registering plugin).
+     *
+     * Boots on every process including queue workers: the recorder itself
+     * stays quiet unless the debug toolbar is installed and enabled, so
+     * workers without it never notice the subscription. Attaching twice
+     * is a no-op.
+     *
+     * @return void
+     */
+    public static function registerWorkerRecorder(): void
+    {
+        $manager = EventManager::instance();
+        foreach ($manager->listeners('Processor.message.start') as $listener) {
+            $callable = $listener['callable'] ?? null;
+            if (
+                is_array($callable)
+                && ($callable[0] ?? null) instanceof Debug\WorkerRecorder
+            ) {
+                return;
+            }
+        }
+
+        Debug\WorkerRecorder::subscribe($manager);
     }
 
     /**

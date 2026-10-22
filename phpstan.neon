@@ -20,5 +20,20 @@ parameters:
 			message: '#TSubject#'
 			path: src/Event/*
 			reportUnmatched: false
+		-
+			identifier: missingType.generics
+			message: '#TSubject#'
+			path: src/Panel/*
+			reportUnmatched: false
+		-
+			identifier: missingType.generics
+			message: '#TSubject#'
+			path: src/Debug/*
+			reportUnmatched: false
+		-
+			identifier: missingType.generics
+			message: '#TSubject#'
+			path: src/Controller/*
+			reportUnmatched: false
 
 services:
