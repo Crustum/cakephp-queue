@@ -6,12 +6,12 @@ namespace Crustum\Queue\Test\TestCase;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\TestSuite\TestCase;
-use Crustum\PluginManifest\Manifest\ManifestInterface;
 use Crustum\Queue\Job\ConfigurableInterface;
 use Crustum\Queue\Job\DispatchableInterface;
 use Crustum\Queue\Job\DispatchableTrait;
 use Crustum\Queue\Job\SyncSuppressibleInterface;
 use Crustum\Queue\Job\TaggableInterface;
+use Crustum\Queue\Manifest\QueueManifest;
 use Crustum\Queue\QueuePlugin;
 use Crustum\Queue\Sync\SyncJobRunner;
 use TestApp\Application;
@@ -48,12 +48,14 @@ class QueuePluginTest extends TestCase
     }
 
     /**
+     * Plugin carries no hard manifest contract; the standalone provider publishes config.
+     *
      * @return void
      */
-    public function testImplementsManifestAndPublishesConfig(): void
+    public function testUsesStandaloneManifestProvider(): void
     {
-        $this->assertInstanceOf(ManifestInterface::class, new QueuePlugin());
-        $manifest = QueuePlugin::manifest();
+        $this->assertFalse(method_exists(QueuePlugin::class, 'manifest'));
+        $manifest = QueueManifest::manifest();
         $this->assertNotEmpty($manifest);
 
         $sources = array_column($manifest, 'source');

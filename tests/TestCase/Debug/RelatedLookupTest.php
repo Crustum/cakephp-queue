@@ -73,6 +73,7 @@ class RelatedLookupTest extends TestCase
         $bad = new stdClass();
         $bad->request_id = 'broken';
         $bad->content = 'not-serialized{{{';
+
         $empty = new stdClass();
         $empty->request_id = '';
         $empty->content = serialize(['groups' => [['key' => 'k-1', 'kind' => 'push']]]);

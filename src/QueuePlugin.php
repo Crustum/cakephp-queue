@@ -10,21 +10,15 @@ use Cake\Core\Configure;
 use Cake\Core\ContainerApplicationInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Event\EventManager;
-use Crustum\PluginManifest\Manifest\ManifestInterface;
-use Crustum\PluginManifest\Manifest\ManifestTrait;
 use Crustum\Queue\Sync\SyncDispatchListener;
 use Crustum\Queue\Sync\SyncModeResolver;
 use Override;
 
 /**
  * Crustum Queue — Dispatchable / Configurable / Taggable job helpers.
- *
- * @uses \Crustum\PluginManifest\Manifest\ManifestTrait
  */
-class QueuePlugin extends BasePlugin implements ManifestInterface
+class QueuePlugin extends BasePlugin
 {
-    use ManifestTrait;
-
     /**
      * @var string|null
      */
@@ -157,28 +151,5 @@ class QueuePlugin extends BasePlugin implements ManifestInterface
         }
 
         Debug\WorkerRecorder::subscribe($manager);
-    }
-
-    /**
-     * Get the manifest for the plugin.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public static function manifest(): array
-    {
-        $pluginPath = dirname(__DIR__);
-
-        return array_merge(
-            static::manifestConfig(
-                $pluginPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'crustum_queue.php',
-                CONFIG . 'crustum_queue.php',
-                false,
-            ),
-            static::manifestBootstrapAppend(
-                "if (file_exists(CONFIG . 'crustum_queue.php')) {\n    Configure::load('crustum_queue', 'default');\n}",
-                '// Crustum Queue Plugin Configuration',
-            ),
-            static::manifestStarRepo('Crustum/cakephp-queue'),
-        );
     }
 }

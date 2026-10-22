@@ -214,8 +214,6 @@ class QueuePanelTest extends TestCase
      */
     public function testRecorderNoopsWithoutToolbar(): void
     {
-        $this->assertFalse(class_exists('Crustum\\DebugBar\\ToolbarService'));
-
         $recorder = new WorkerRecorder();
         $message = new PanelProbeMessage(['job' => 'App\\Job\\SendMail']);
         $recorder->captureStart(new Event('Processor.message.start', null, ['message' => $message]));
@@ -264,11 +262,11 @@ class QueuePanelTest extends TestCase
             public function element(string $name, array $data = [], array $options = []): string
             {
                 if ($name === 'Crustum/DebugBar.ui/inspector_workspace') {
-                    return (string)($data['list'] ?? '') . (string)($data['detail'] ?? '');
+                    return ($data['list'] ?? '') . ($data['detail'] ?? '');
                 }
 
                 if ($name === 'Crustum/DebugBar.ui/inspector_list_panel') {
-                    return (string)($data['controls'] ?? '') . (string)($data['body'] ?? '');
+                    return ($data['controls'] ?? '') . ($data['body'] ?? '');
                 }
 
                 if (str_starts_with($name, 'Crustum/DebugBar.')) {
@@ -278,7 +276,7 @@ class QueuePanelTest extends TestCase
                 return parent::element($name, $data, $options);
             }
         };
-        $html = (string)$view->element('Crustum/Queue.queue_panel', $data);
+        $html = $view->element('Crustum/Queue.queue_panel', $data);
 
         $this->assertStringContainsString('data-dk-queue-panel', $html);
         $this->assertStringContainsString('data-dk-queue-entry', $html);

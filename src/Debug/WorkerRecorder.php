@@ -6,6 +6,7 @@ namespace Crustum\Queue\Debug;
 use Cake\Event\EventInterface;
 use Cake\Event\EventListenerInterface;
 use Cake\Event\EventManager;
+use Crustum\DebugBar\Service\CliRecorder;
 use Throwable;
 
 /**
@@ -92,7 +93,7 @@ class WorkerRecorder implements EventListenerInterface
 
         try {
             $request = static::cli('panel', ['Request']);
-            if (is_callable([$request, 'startCommand'])) {
+            if (is_object($request) && method_exists($request, 'startCommand')) {
                 $request->startCommand(static::target($event), []);
             }
         } catch (Throwable) {
@@ -101,7 +102,7 @@ class WorkerRecorder implements EventListenerInterface
 
         try {
             $queue = static::cli('panel', ['Queue']);
-            if (is_callable([$queue, 'captureStart'])) {
+            if (is_object($queue) && method_exists($queue, 'captureStart')) {
                 $queue->captureStart($event);
             }
         } catch (Throwable) {
@@ -189,7 +190,7 @@ class WorkerRecorder implements EventListenerInterface
 
         try {
             $panel = static::cli('panel', ['Request']);
-            if (is_callable([$panel, 'finishCommand'])) {
+            if (is_object($panel) && method_exists($panel, 'finishCommand')) {
                 $panel->finishCommand($outcome, $exitCode);
             }
         } catch (Throwable) {
@@ -275,7 +276,7 @@ class WorkerRecorder implements EventListenerInterface
      */
     protected static function cli(string $method, array $args = []): mixed
     {
-        $callable = ['Crustum\\DebugBar\\Service\\CliRecorder', $method];
+        $callable = [CliRecorder::class, $method];
         if (!is_callable($callable)) {
             return null;
         }

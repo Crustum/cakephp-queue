@@ -140,9 +140,7 @@ class QueuePanel implements EventListenerInterface
             array $data,
             array $config,
         ): array {
-            if (!isset($data[static::CORRELATION_FIELD])) {
-                $data[static::CORRELATION_FIELD] = Text::uuid();
-            }
+            $data[static::CORRELATION_FIELD] ??= Text::uuid();
 
             return $data;
         });
@@ -518,7 +516,7 @@ class QueuePanel implements EventListenerInterface
             ];
         }
 
-        return is_object($value) ? $value::class : get_debug_type($value);
+        return get_debug_type($value);
     }
 
     /**
@@ -538,7 +536,7 @@ class QueuePanel implements EventListenerInterface
                 continue;
             }
 
-            $file = (string)($frame['file'] ?? '');
+            $file = $frame['file'] ?? '';
             if ($file === '') {
                 continue;
             }
@@ -546,7 +544,7 @@ class QueuePanel implements EventListenerInterface
             $vendor = str_contains($file, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR);
             $frames[] = [
                 'file' => $file,
-                'line' => (int)($frame['line'] ?? 0),
+                'line' => $frame['line'] ?? 0,
                 'function' => $class !== ''
                     ? $class . ($frame['type'] ?? '') . $frame['function']
                     : $frame['function'],
@@ -598,7 +596,7 @@ class QueuePanel implements EventListenerInterface
     {
         $buckets = [];
         foreach ($records as $record) {
-            $key = (string)($record['job'] ?? '?') . '|' . (string)($record['key'] ?? '?');
+            $key = ($record['job'] ?? '?') . '|' . ($record['key'] ?? '?');
             $buckets[$key][] = $record;
         }
 
@@ -621,7 +619,7 @@ class QueuePanel implements EventListenerInterface
             $recipient = (string)($first['connection'] ?? '') !== ''
                 ? (string)$first['connection']
                 : 'default';
-            $filterTokens = [$status === 'completed' || $status === 'pushed' || $status === 'sync' ? 'sent' : 'attention'];
+            $filterTokens = [in_array($status, ['completed', 'pushed', 'sync'], true) ? 'sent' : 'attention'];
             $filterFacets = [];
             $toToken = 'to:' . static::slug($recipient);
             $filterTokens[] = $toToken;

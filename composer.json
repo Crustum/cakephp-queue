@@ -21,12 +21,13 @@
         "cakephp/cakephp": "^5.4",
         "cakephp/queue": "3.x-dev",
         "symfony/polyfill-php84": "^1.31",
-        "crustum/plugin-manifest": "^1.0.2",
         "ramsey/uuid": "^4.7",
         "crustum/cakephp-attribute-resolver": "^1.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^5.3",
+        "crustum/debug-bar": "^1.0",
+        "crustum/plugin-manifest": "^1.2",
         "enqueue/simple-client": "^0.10.27",
         "enqueue/dsn": "^0.10.27",
         "enqueue/null": "^0.10.27",
@@ -38,6 +39,7 @@
         "symfony/config": "^7.3|^8.0"
     },
     "suggest": {
+        "crustum/plugin-manifest": "CakePHP plugin installer",
         "laravel/serializable-closure": "Packs queued then/catch callbacks (CallbackProcessor)."
     },
     "autoload": {
