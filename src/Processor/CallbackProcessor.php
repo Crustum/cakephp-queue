@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Processor;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 use Cake\Queue\Job\Message;
 use Cake\Queue\Queue\Processor as BaseProcessor;
 use Closure;
@@ -154,10 +154,7 @@ class CallbackProcessor extends BaseProcessor
     protected function resolveJob(string $jobClass): object
     {
         if ($this->container instanceof ContainerInterface && $this->container->has($jobClass)) {
-            $job = $this->container->get($jobClass);
-            assert(is_object($job));
-
-            return $job;
+            return $this->container->get($jobClass);
         }
 
         return new $jobClass();

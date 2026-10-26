@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Test\TestCase\Processor;
 
-use Cake\Core\Container;
+use Cake\Container\Container;
 use Cake\Queue\Job\Message;
 use Cake\TestSuite\TestCase;
 use Crustum\Queue\Test\TestCase\Job\ExampleMiddlewareJob;

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Test\TestCase\Sync;
 
+use Cake\Container\Container;
 use Cake\Core\Configure;
-use Cake\Core\Container;
 use Cake\Event\EventInterface;
 use Cake\Event\EventManager;
 use Cake\Queue\QueueManager;

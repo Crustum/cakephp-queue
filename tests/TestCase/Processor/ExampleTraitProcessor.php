@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Test\TestCase\Processor;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 use Cake\Queue\Job\Message;
 use Crustum\Queue\Processor\RunsMiddlewareTrait;
 
@@ -16,7 +16,7 @@ class ExampleTraitProcessor
 
     /**
      * @param \Cake\Queue\Job\Message $message Job message
-     * @param \Cake\Core\ContainerInterface|null $container DI container
+     * @param \Cake\Container\ContainerInterface|null $container DI container
      * @return object
      */
     public function resolveJob(Message $message, ?ContainerInterface $container): object

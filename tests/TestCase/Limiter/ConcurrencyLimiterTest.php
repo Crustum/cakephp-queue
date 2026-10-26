@@ -97,7 +97,7 @@ class ConcurrencyLimiterTest extends TestCase
         $held = Lock::acquire('slots1', 60, 'test_lock');
         $this->assertNotNull($held);
 
-        $result = (new ConcurrencyLimiterBuilder('test_lock', 'slots'))
+        $result = new ConcurrencyLimiterBuilder('test_lock', 'slots')
             ->setMaxLocks(1)
             ->setTimeout(0)
             ->setSleep(10)

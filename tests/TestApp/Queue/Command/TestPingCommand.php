@@ -8,10 +8,10 @@ use Crustum\Queue\CommandMessage;
 /**
  * Test command for CommandBus tests (independent of Codex jobs).
  */
-final class TestPingCommand implements CommandMessage
+final readonly class TestPingCommand implements CommandMessage
 {
     public function __construct(
-        public readonly int $value = 1,
+        public int $value = 1,
     ) {
     }
 

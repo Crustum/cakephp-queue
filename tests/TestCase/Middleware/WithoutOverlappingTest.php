@@ -108,7 +108,7 @@ class WithoutOverlappingTest extends TestCase
      */
     public function testDisableReleaseDropsOnContention(): void
     {
-        $middleware = (new WithoutOverlapping('email', 30, 60, 'test_overlap'))->disableRelease();
+        $middleware = new WithoutOverlapping('email', 30, 60, 'test_overlap')->disableRelease();
         $held = Lock::acquire($middleware->getLockKey(new ExampleMiddlewareJob()), 60, 'test_overlap');
         $this->assertNotNull($held);
 
@@ -148,7 +148,7 @@ class WithoutOverlappingTest extends TestCase
             $scoped->getLockKey($job),
         );
 
-        $shared = (new WithoutOverlapping('email', 0, 0, 'test_overlap'))->setShared();
+        $shared = new WithoutOverlapping('email', 0, 0, 'test_overlap')->setShared();
         $this->assertSame('crustum-queue-overlap:email', $shared->getLockKey($job));
     }
 

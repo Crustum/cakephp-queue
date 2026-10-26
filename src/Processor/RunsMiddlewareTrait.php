@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Processor;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 use Cake\Queue\Job\Message;
 use Crustum\Queue\Contract\MiddlewareAwareInterface;
 use Crustum\Queue\MiddlewareRunner;
@@ -33,7 +33,7 @@ trait RunsMiddlewareTrait
      * Resolve the job instance for the message (container or plain `new`).
      *
      * @param \Cake\Queue\Job\Message $message Job message
-     * @param \Cake\Core\ContainerInterface|null $container DI container
+     * @param \Cake\Container\ContainerInterface|null $container DI container
      * @return object The same instance that must execute (resolve-once)
      */
     protected function resolveMiddlewareJob(Message $message, ?ContainerInterface $container): object

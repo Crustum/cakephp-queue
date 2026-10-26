@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 
 /**
  * Holds the application DI container for SyncJobRunner (same instance workers use).
@@ -13,12 +13,12 @@ use Cake\Core\ContainerInterface;
 class ContainerRegistry
 {
     /**
-     * @var \Cake\Core\ContainerInterface|null
+     * @var \Cake\Container\ContainerInterface|null
      */
     protected static ?ContainerInterface $instance = null;
 
     /**
-     * @param \Cake\Core\ContainerInterface|null $container Application container
+     * @param \Cake\Container\ContainerInterface|null $container Application container
      * @return void
      */
     public static function setInstance(?ContainerInterface $container): void
@@ -27,7 +27,7 @@ class ContainerRegistry
     }
 
     /**
-     * @return \Cake\Core\ContainerInterface|null
+     * @return \Cake\Container\ContainerInterface|null
      */
     public static function getInstance(): ?ContainerInterface
     {

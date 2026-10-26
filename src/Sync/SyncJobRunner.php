@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Sync;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 use Cake\Event\EventInterface;
 use Cake\Event\EventListenerInterface;
 use Cake\Log\Log;
@@ -29,7 +29,7 @@ class SyncJobRunner
      * @param class-string $jobClass Job class
      * @param array<string, mixed> $data Job payload
      * @param array<string, mixed> $config Dispatch configuration
-     * @param \Cake\Core\ContainerInterface|null $container Optional container override
+     * @param \Cake\Container\ContainerInterface|null $container Optional container override
      * @return void
      * @throws \Throwable When the job fails, rejects, or would requeue
      */
@@ -77,7 +77,7 @@ class SyncJobRunner
     /**
      * @param string $configName Queue config name
      * @param \Psr\Log\LoggerInterface $logger Logger
-     * @param \Cake\Core\ContainerInterface|null $container DI container
+     * @param \Cake\Container\ContainerInterface|null $container DI container
      * @return \Cake\Queue\Queue\Processor
      */
     protected static function createProcessor(

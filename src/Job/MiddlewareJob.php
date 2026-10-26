@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Crustum\Queue\Job;
 
-use Cake\Core\ContainerInterface;
+use Cake\Container\ContainerInterface;
 use Cake\Queue\Job\JobInterface;
 use Cake\Queue\Job\Message;
 use Crustum\Queue\ContainerRegistry;
@@ -67,7 +67,7 @@ abstract class MiddlewareJob implements JobInterface, DispatchableInterface, Mid
     /**
      * App container for resolving middleware services (Cache, limiter, …).
      *
-     * @return \Cake\Core\ContainerInterface|null
+     * @return \Cake\Container\ContainerInterface|null
      */
     protected function container(): ?ContainerInterface
     {

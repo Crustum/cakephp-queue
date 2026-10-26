@@ -10,6 +10,7 @@ use Cake\Core\Configure;
 use Cake\Core\ContainerApplicationInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Event\EventManager;
+use Crustum\Queue\Debug\WorkerRecorder;
 use Crustum\Queue\Sync\SyncDispatchListener;
 use Crustum\Queue\Sync\SyncModeResolver;
 use Override;
@@ -144,12 +145,12 @@ class QueuePlugin extends BasePlugin
             $callable = $listener['callable'] ?? null;
             if (
                 is_array($callable)
-                && ($callable[0] ?? null) instanceof Debug\WorkerRecorder
+                && ($callable[0] ?? null) instanceof WorkerRecorder
             ) {
                 return;
             }
         }
 
-        Debug\WorkerRecorder::subscribe($manager);
+        WorkerRecorder::subscribe($manager);
     }
 }

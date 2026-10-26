@@ -17,23 +17,22 @@
         }
     ],
     "require": {
-        "php": ">=8.3",
-        "cakephp/cakephp": "^5.4",
-        "cakephp/queue": "3.x-dev",
+        "php": ">=8.5",
+        "cakephp/cakephp": "6.x-dev",
+        "cakephp/queue": "4.x-dev",
         "symfony/polyfill-php84": "^1.31",
-        "ramsey/uuid": "^4.7",
-        "crustum/cakephp-attribute-resolver": "^1.0"
+        "ramsey/uuid": "^4.7"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^5.3",
-        "crustum/debug-bar": "^1.0",
-        "crustum/plugin-manifest": "^1.2",
+        "cakephp/cakephp-codesniffer": "6.x-dev",
+        "crustum/debug-bar": "2.x-dev",
+        "crustum/plugin-manifest": "2.x-dev",
         "enqueue/simple-client": "^0.10.27",
         "enqueue/dsn": "^0.10.27",
         "enqueue/null": "^0.10.27",
         "enqueue/enqueue": "^0.10.27",
         "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^10.5 || ^11.1 || ^12.5 || ^13.0",
+        "phpunit/phpunit": "^12.5 || ^13.0",
         "queue-interop/queue-interop": "^0.8.2",
         "rector/rector": "^2.6",
         "symfony/config": "^7.3|^8.0"
@@ -87,5 +86,11 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:skie/cakephp-queue.git"
+        }
+    ]
 }

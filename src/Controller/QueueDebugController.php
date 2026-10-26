@@ -8,7 +8,6 @@ use Cake\Core\Plugin;
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response;
 use Crustum\Queue\Debug\RelatedLookup;
 
 /**
@@ -36,13 +35,11 @@ class QueueDebugController extends Controller
      * Before render handler.
      *
      * @param \Cake\Event\EventInterface $event The event.
-     * @return \Cake\Http\Response|null
+     * @return void
      */
-    public function beforeRender(EventInterface $event): ?Response
+    public function beforeRender(EventInterface $event): void
     {
         $this->viewBuilder()->setOption('serialize', ['request_id', 'inspector']);
-
-        return null;
     }
 
     /**
