@@ -8,6 +8,7 @@ use Cake\Cache\Engine\FileEngine;
 use Cake\Core\BasePlugin;
 use Cake\Core\Configure;
 use Cake\Core\ContainerApplicationInterface;
+use Cake\Core\ContainerInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Event\EventManager;
 use Crustum\Queue\Sync\SyncDispatchListener;
@@ -62,7 +63,12 @@ class QueuePlugin extends BasePlugin
         }
 
         if ($app instanceof ContainerApplicationInterface) {
-            ContainerRegistry::setInstance($app->getContainer());
+            $app->getEventManager()->on('Application.buildContainer', function ($event): void {
+                $container = $event->getData('container');
+                if ($container instanceof ContainerInterface) {
+                    ContainerRegistry::setInstance($container);
+                }
+            });
         }
 
         self::registerAttributeCache();
