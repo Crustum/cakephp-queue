@@ -4,28 +4,17 @@ declare(strict_types=1);
 namespace Crustum\Queue;
 
 /**
- * Typed job payload contract (prototype for crustum/cakephp-queue CommandBus).
+ * Typed job payload contract for {@see CommandBus}.
  *
  * A command message is a leaf DTO: callers construct it, {@see CommandBus} maps
  * its class to a handler job, the job restores it in execute() via
  * `Message::getDto()`.
  *
- * New commands are plain DTOs hydrated by `DtoManager`; no base trait needed.
+ * Commands are plain DTOs hydrated by `DtoManager` (constructor mapping, nested
+ * DTOs, `#[CollectionOf]`); no methods, traits, or base classes required. The
+ * two optional core hooks still apply when needed: `JsonSerializable` controls
+ * serialization, a static `createFromArray(array, bool)` controls hydration.
  */
 interface CommandMessage
 {
-    /**
-     * Build the JSON-safe queue payload for the handler job.
-     *
-     * @return array<string, mixed> JSON-safe payload for the queue
-     */
-    public function payload(): array;
-
-    /**
-     * Rebuild the command from a queue message payload.
-     *
-     * @param array<string, mixed> $data Payload from the queue message
-     * @return static
-     */
-    public static function fromPayload(array $data): static;
 }

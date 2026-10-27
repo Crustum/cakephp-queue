@@ -14,21 +14,4 @@ final class TestPingCommand implements CommandMessage
         public readonly int $value = 1,
     ) {
     }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function payload(): array
-    {
-        return ['value' => $this->value];
-    }
-
-    /**
-     * @param array<string, mixed> $data Payload
-     * @return static
-     */
-    public static function fromPayload(array $data): static
-    {
-        return new self((int)($data['value'] ?? 0));
-    }
 }

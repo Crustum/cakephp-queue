@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2]
+
+### Removed
+
+- `CommandMessage` is now a marker interface: `payload()` / `fromPayload()` are gone. Commands are plain DTOs (constructor + readonly props); hydration goes through `DtoManager` / `Message::getDto()`. Existing `payload()` / `fromPayload()` methods on commands are dead code — safe to delete. Optional core hooks still apply when needed: `JsonSerializable` for serialization, static `createFromArray(array, bool)` for hydration.
+
 ## [1.4.0]
 
 ### Added
