@@ -53,21 +53,21 @@ jobs:
         fi
 
     - name: Setup problem matchers for PHPUnit
-      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.5' && matrix.dependencies == 'highest'
       run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
     - name: Run PHPUnit with coverage
-      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.5' && matrix.dependencies == 'highest'
       run: |
         export CODECOVERAGE=1
         vendor/bin/phpunit --configuration=phpunit.xml.dist --display-deprecations --display-incomplete --display-skipped --coverage-clover=coverage.xml
 
     - name: Run PHPUnit without coverage
-      if: matrix.php-version != '8.3' || matrix.dependencies != 'highest'
+      if: matrix.php-version != '8.5' || matrix.dependencies != 'highest'
       run: vendor/bin/phpunit --configuration=phpunit.xml.dist
 
     - name: Submit code coverage
-      if: matrix.php-version == '8.3' && matrix.dependencies == 'highest'
+      if: matrix.php-version == '8.5' && matrix.dependencies == 'highest'
       uses: codecov/codecov-action@v3
 
   cs-stan:
@@ -88,8 +88,8 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.composer/cache
-        key: ${{ runner.os }}-php-8.4-quality-composer-${{ hashFiles('composer.lock', 'composer.json') }}
-        restore-keys: ${{ runner.os }}-php-8.4-quality-composer-
+        key: ${{ runner.os }}-php-8.5-quality-composer-${{ hashFiles('composer.lock', 'composer.json') }}
+        restore-keys: ${{ runner.os }}-php-8.5-quality-composer-
 
     - name: composer install
       run: composer install --prefer-dist --no-progress
